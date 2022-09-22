@@ -5,31 +5,8 @@ import (
 )
 
 func ToWei[T CurrencyAmount, U CurrencyUnit](amount T, fromUnit U) (*big.Int, bool) {
-	var (
-		amt      = new(big.Float)
-		unitFrom Unit
-		ok       bool
-	)
-
-	switch x := (any)(amount).(type) {
-	case *big.Float:
-		amt = x
-	case *big.Int:
-		amt = amt.SetInt(x)
-	case string:
-		amt, _ = amt.SetString(x)
-	}
-
-	switch x := (any)(fromUnit).(type) {
-	case Unit:
-		unitFrom = x
-		ok = true
-	case uint8:
-		unitFrom, ok = UnitFromDecimals(x)
-	case int:
-		unitFrom, ok = UnitFromDecimals(x)
-	}
-
+	amt := parseCurrencyAmount(amount)
+	unitFrom, ok := parseCurrencyUnit(fromUnit)
 	if !ok {
 		return nil, ok
 	}
