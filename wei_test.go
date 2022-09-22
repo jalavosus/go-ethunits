@@ -9,24 +9,6 @@ import (
 	"github.com/jalavosus/go-ethunits"
 )
 
-const (
-	wantWeiStr    string = "342500000000000000000"
-	wantWeiStr2   string = "342000000000000000000"
-	fromEtherStr  string = "342.5"
-	fromEtherStr1 string = "342"
-	fromSzaboStr  string = "342500000"
-	fromGweiStr   string = "342500000000"
-	fromMweiStr   string = "342500000000000"
-	fromKweiStr   string = "342500000000000000"
-)
-
-type toWeiTestCase[T amountConstraint, U unitConstraint] struct {
-	name   string
-	args   testArgs[T, U]
-	want   *big.Int
-	wantOk bool
-}
-
 func assertBigIntEqual(t *testing.T, want, got *big.Int) bool {
 	t.Helper()
 	eq := want.Cmp(got) == 0
@@ -34,7 +16,7 @@ func assertBigIntEqual(t *testing.T, want, got *big.Int) bool {
 }
 
 func TestToWei_String_Unit(t *testing.T) {
-	tests := []toWeiTestCase[string, ethunits.Unit]{
+	tests := []testCase[*big.Int, string, ethunits.Unit]{
 		{
 			name: "unit=ether,amount=" + fromEtherStr,
 			args: testArgs[string, ethunits.Unit]{
@@ -92,16 +74,12 @@ func TestToWei_String_Unit(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, gotOk := ethunits.ToWei(tt.args.amount, tt.args.fromUnit)
-			assert.Equal(t, tt.wantOk, gotOk)
-			assertBigIntEqual(t, tt.want, got)
-		})
+		testToWei(t, tt)
 	}
 }
 
 func TestToWei_String_Uint8(t *testing.T) {
-	tests := []toWeiTestCase[string, uint8]{
+	tests := []testCase[*big.Int, string, uint8]{
 		{
 			name: "unit=1,amount=" + fromEtherStr,
 			args: testArgs[string, uint8]{
@@ -168,16 +146,12 @@ func TestToWei_String_Uint8(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, gotOk := ethunits.ToWei(tt.args.amount, tt.args.fromUnit)
-			assert.Equal(t, tt.wantOk, gotOk)
-			assertBigIntEqual(t, tt.want, got)
-		})
+		testToWei(t, tt)
 	}
 }
 
 func TestToWei_String_Int(t *testing.T) {
-	tests := []toWeiTestCase[string, int]{
+	tests := []testCase[*big.Int, string, int]{
 		{
 			name: "unit=1,amount=" + fromEtherStr,
 			args: testArgs[string, int]{
@@ -244,20 +218,16 @@ func TestToWei_String_Int(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, gotOk := ethunits.ToWei(tt.args.amount, tt.args.fromUnit)
-			assert.Equal(t, tt.wantOk, gotOk)
-			assertBigIntEqual(t, tt.want, got)
-		})
+		testToWei(t, tt)
 	}
 }
 
 func TestToWei_BigInt_Unit(t *testing.T) {
-	tests := []toWeiTestCase[*big.Int, ethunits.Unit]{
+	tests := []testCase[*big.Int, *big.Int, ethunits.Unit]{
 		{
-			name: "unit=ether,amount=" + fromEtherStr1,
+			name: "unit=ether,amount=" + fromEtherStr2,
 			args: testArgs[*big.Int, ethunits.Unit]{
-				amount:   makeBigInt(fromEtherStr1),
+				amount:   makeBigInt(fromEtherStr2),
 				fromUnit: ethunits.Ether,
 			},
 			want:   makeBigInt(wantWeiStr2),
@@ -311,20 +281,16 @@ func TestToWei_BigInt_Unit(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, gotOk := ethunits.ToWei(tt.args.amount, tt.args.fromUnit)
-			assert.Equal(t, tt.wantOk, gotOk)
-			assertBigIntEqual(t, tt.want, got)
-		})
+		testToWei(t, tt)
 	}
 }
 
 func TestToWei_BigInt_Uint8(t *testing.T) {
-	tests := []toWeiTestCase[*big.Int, uint8]{
+	tests := []testCase[*big.Int, *big.Int, uint8]{
 		{
-			name: "unit=1,amount=" + fromEtherStr1,
+			name: "unit=1,amount=" + fromEtherStr2,
 			args: testArgs[*big.Int, uint8]{
-				amount:   makeBigInt(fromEtherStr1),
+				amount:   makeBigInt(fromEtherStr2),
 				fromUnit: 1,
 			},
 			want:   makeBigInt(wantWeiStr2),
@@ -387,22 +353,16 @@ func TestToWei_BigInt_Uint8(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, gotOk := ethunits.ToWei(tt.args.amount, tt.args.fromUnit)
-			assert.Equal(t, tt.wantOk, gotOk)
-			if tt.want != nil {
-				assertBigIntEqual(t, tt.want, got)
-			}
-		})
+		testToWei(t, tt)
 	}
 }
 
 func TestToWei_BigInt_Int(t *testing.T) {
-	tests := []toWeiTestCase[*big.Int, int]{
+	tests := []testCase[*big.Int, *big.Int, int]{
 		{
-			name: "unit=1,amount=" + fromEtherStr1,
+			name: "unit=1,amount=" + fromEtherStr2,
 			args: testArgs[*big.Int, int]{
-				amount:   makeBigInt(fromEtherStr1),
+				amount:   makeBigInt(fromEtherStr2),
 				fromUnit: 1,
 			},
 			want:   makeBigInt(wantWeiStr2),
@@ -465,18 +425,12 @@ func TestToWei_BigInt_Int(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, gotOk := ethunits.ToWei(tt.args.amount, tt.args.fromUnit)
-			assert.Equal(t, tt.wantOk, gotOk)
-			if tt.want != nil {
-				assertBigIntEqual(t, tt.want, got)
-			}
-		})
+		testToWei(t, tt)
 	}
 }
 
 func TestToWei_BigFloat_Unit(t *testing.T) {
-	tests := []toWeiTestCase[*big.Float, ethunits.Unit]{
+	tests := []testCase[*big.Int, *big.Float, ethunits.Unit]{
 		{
 			name: "unit=ether,amount=" + fromEtherStr,
 			args: testArgs[*big.Float, ethunits.Unit]{
@@ -534,16 +488,12 @@ func TestToWei_BigFloat_Unit(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, gotOk := ethunits.ToWei(tt.args.amount, tt.args.fromUnit)
-			assert.Equal(t, tt.wantOk, gotOk)
-			assertBigIntEqual(t, tt.want, got)
-		})
+		testToWei(t, tt)
 	}
 }
 
 func TestToWei_BigFloat_Uint8(t *testing.T) {
-	tests := []toWeiTestCase[*big.Float, uint8]{
+	tests := []testCase[*big.Int, *big.Float, uint8]{
 		{
 			name: "unit=1,amount=" + fromEtherStr,
 			args: testArgs[*big.Float, uint8]{
@@ -610,16 +560,12 @@ func TestToWei_BigFloat_Uint8(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, gotOk := ethunits.ToWei(tt.args.amount, tt.args.fromUnit)
-			assert.Equal(t, tt.wantOk, gotOk)
-			assertBigIntEqual(t, tt.want, got)
-		})
+		testToWei(t, tt)
 	}
 }
 
 func TestToWei_BigFloat_Int(t *testing.T) {
-	tests := []toWeiTestCase[*big.Float, int]{
+	tests := []testCase[*big.Int, *big.Float, int]{
 		{
 			name: "unit=1,amount=" + fromEtherStr,
 			args: testArgs[*big.Float, int]{
@@ -686,10 +632,17 @@ func TestToWei_BigFloat_Int(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, gotOk := ethunits.ToWei(tt.args.amount, tt.args.fromUnit)
-			assert.Equal(t, tt.wantOk, gotOk)
-			assertBigIntEqual(t, tt.want, got)
-		})
+		testToWei(t, tt)
 	}
+}
+
+func testToWei[T1 amountConstraint, T2 unitConstraint](t *testing.T, tt testCase[*big.Int, T1, T2]) {
+	t.Helper()
+	t.Run(tt.name, func(t *testing.T) {
+		got, gotOk := ethunits.ToWei(tt.args.amount, tt.args.fromUnit)
+		assert.Equal(t, tt.wantOk, gotOk)
+		if tt.want != nil {
+			assertBigIntEqual(t, tt.want, got)
+		}
+	})
 }
